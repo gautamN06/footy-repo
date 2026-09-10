@@ -1,6 +1,7 @@
 using Backend.Models; 
 using Backend.Data; 
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Mvc.RazorPages;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -21,9 +22,62 @@ if (app.Environment.IsDevelopment())
     app.MapOpenApi();
 }
 
-app.MapGet("/players", async (FootballDbContext db) =>
+//GET METHODS
+app.MapGet("/players", async (
+    int? page,
+    int? pageSize,
+    string? team,
+    string? position, 
+    FootballDbContext db) =>
 {
-    return await db.Players.ToListAsync();
+    int currentPage = page ?? 1;
+    int currentPageSize = pageSize ?? 20; 
+
+    if(currentPage < 1)
+    {
+        return Results.BadRequest("There must at least be 1 on this page.");
+    }
+
+    if (currentPageSize < 1 || currentPageSize > 100)
+    {
+        return Results.BadRequest("Page size must be between 1 and 100.");
+    }
+    
+    var query = db.Players.AsQueryable();
+
+    if(!string.IsNullOrWhiteSpace(team))
+    {
+        query = query.Where(p => p.Team == team);
+    }
+
+    if(!string.IsNullOrWhiteSpace(position))
+    {
+        query = query.Where(p=>p.Position == position);
+    }
+
+    var totalPlayers = await query.CountAsync();
+
+    var players = await query
+        .Skip((currentPage-1)*currentPageSize)
+        .Take(currentPageSize)
+        .ToListAsync();
+    
+    return Results.Ok(new
+    {
+       page = currentPage,
+       pageSize = currentPageSize,
+       totalPlayers, 
+       players 
+    });
+});
+
+app.MapGet("/players/search", async (string name, FootballDbContext db) =>
+{
+    var players = await db.Players 
+        .Where(p => EF.Functions.ILike(p.Name, $"%{name}"))
+        .ToListAsync();   
+
+    return Results.Ok(players);
 });
 
 app.MapGet("/players/{id}", async (int id, FootballDbContext db) =>
@@ -39,6 +93,8 @@ app.MapGet("/players/{id}", async (int id, FootballDbContext db) =>
 
 });
 
+
+//POST METHODS
 app.MapPost("/players", async (Player player, FootballDbContext db) =>
 {
     db.Players.Add(player);
@@ -47,7 +103,7 @@ app.MapPost("/players", async (Player player, FootballDbContext db) =>
     return Results.Created($"/players/{player.Id}", player);
 });
 
-
+//PUT METHODS
 app.MapPut("/players/{id}", async (int id, Player updatedPlayer, FootballDbContext db) =>
 {
     var player = await db.Players.FindAsync(id);
@@ -66,7 +122,7 @@ app.MapPut("/players/{id}", async (int id, Player updatedPlayer, FootballDbConte
 
 });
 
-
+//DELETE METHOD
 app.MapDelete("/players/{id}", async (int id, FootballDbContext db) =>
 {
     var player = await db.Players.FindAsync(id);

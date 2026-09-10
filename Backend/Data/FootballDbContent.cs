@@ -1,12 +1,12 @@
 using Backend.Models; 
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Options;
+
 
 namespace Backend.Data; 
 
 public class FootballDbContext : DbContext
 {
-    public FootballDbContext(DbContextOptions<FootballDbContent> options)
+    public FootballDbContext(DbContextOptions<FootballDbContext> options)
         : base(options)
     {
     }

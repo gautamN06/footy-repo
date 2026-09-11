@@ -396,63 +396,6 @@ select {
     text-shadow: 0 1px 3px black;
 }
 
-/* POSITIONS */
-
-.player-gk {
-    left: 50%;
-    top: 90%;
-}
-
-.player-lb {
-    left: 17%;
-    top: 72%;
-}
-
-.player-lcb {
-    left: 39%;
-    top: 75%;
-}
-
-.player-rcb {
-    left: 61%;
-    top: 75%;
-}
-
-.player-rb {
-    left: 83%;
-    top: 72%;
-}
-
-.player-lcm {
-    left: 30%;
-    top: 53%;
-}
-
-.player-cm {
-    left: 50%;
-    top: 48%;
-}
-
-.player-rcm {
-    left: 70%;
-    top: 53%;
-}
-
-.player-lw {
-    left: 22%;
-    top: 23%;
-}
-
-.player-st {
-    left: 50%;
-    top: 15%;
-}
-
-.player-rw {
-    left: 78%;
-    top: 23%;
-}
-
 @media (max-width: 900px) {
 
     .builder {
@@ -468,4 +411,89 @@ select {
         order: -1;
     }
 
+}
+
+/* 4-4-2 */
+
+.player-lm {
+    left: 12%;
+    top: 50%;
+}
+
+.player-rm {
+    right: 12%;
+    top: 50%;
+}
+
+.player-lst {
+    left: 40%;
+    top: 18%;
+}
+
+.player-rst {
+    right: 40%;
+    top: 18%;
+}
+
+.pitch-controls {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+
+.reset-button {
+    background: transparent;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    color: #aaa;
+    padding: 7px 12px;
+    font-size: 11px;
+    letter-spacing: 1px;
+    cursor: pointer;
+    transition: 0.2s ease;
+}
+
+.reset-button:hover {
+    border-color: #62e36b;
+    color: #62e36b;
+}
+
+.builder-controls {
+    display: flex;
+    align-items: flex-end;
+    gap: 24px;
+}
+
+.team-control {
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+}
+
+.team-control span,
+.formation-selector span {
+    font-size: 10px;
+    letter-spacing: 1.5px;
+    color: #777;
+}
+
+.team-control select,
+.formation-selector select {
+    background: #111416;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    color: #eee;
+    padding: 9px 30px 9px 12px;
+    font-size: 12px;
+    cursor: pointer;
+    outline: none;
+}
+
+.team-control select:hover,
+.formation-selector select:hover {
+    border-color: #62e36b;
+}
+
+.team-control option,
+.formation-selector option {
+    background: #111416;
+    color: white;
 }

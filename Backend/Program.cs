@@ -17,6 +17,13 @@ builder.Services.AddDbContext<FootballDbContext>(options =>
 
 var app = builder.Build();
 
+using (var scope = app.Services.CreateScope())
+{
+    var db = scope.ServiceProvider.GetRequiredService<FootballDbContext>();
+
+    DbSeeder.Seed(db);
+}
+
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();

@@ -8,5 +8,5 @@ public class Player
     public string Position {get; set; } = "";
     public int Age {get; set; }
     public string Nationality {get; set; } = "";
-
+    public int ShirtNumber { get; set;}
 }

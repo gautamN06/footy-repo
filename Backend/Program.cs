@@ -5,6 +5,18 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 
 var builder = WebApplication.CreateBuilder(args);
 
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("React Frontend", policy =>
+    {
+        policy 
+            .WithOrigins("http://localhost:5173")
+            .AllowAnyHeader()
+            .AllowAnyMethod();
+    });
+    
+});
+
 builder.Services.AddOpenApi();
 
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
@@ -16,6 +28,8 @@ builder.Services.AddDbContext<FootballDbContext>(options =>
     options.UseNpgsql(connectionString));
 
 var app = builder.Build();
+
+app.UseCors("React Frontend");
 
 using (var scope = app.Services.CreateScope())
 {

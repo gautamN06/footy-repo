@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from "react";
 import Squad from "./components/Squad";
 import Pitch from "./components/Pitch";
@@ -5,23 +6,81 @@ import FormationSelector from "./components/FormationSelector";
 import "./App.css";
 
 function App() {
-
     const [team, setTeam] = useState("Arsenal");
     const [squad, setSquad] = useState([]);
     const [formation, setFormation] = useState("4-3-3");
 
-    useEffect(() => {
+    const [lineup, setLineup] = useState([]);
 
-        fetch(`http://localhost:5219/players?team=${team}`)
+    /*
+     * Load the selected team's squad.
+     */
+    useEffect(() => {
+        fetch(`http://localhost:5219/players?team=${team}&pageSize=100`)
             .then(response => response.json())
             .then(data => {
                 setSquad(data.players);
+                setLineup([]);
             })
             .catch(error => {
                 console.error("Failed to fetch squad:", error);
             });
-
     }, [team]);
+
+
+    const addPlayerToLineup = (player) => {
+
+        // Don't add the same player twice.
+        if (lineup.some(p => p.id === player.id)) {
+            return;
+        }
+
+        // Maximum of 11 players.
+        if (lineup.length >= 11) {
+            return;
+        }
+
+        setLineup(current => [
+            ...current,
+            {
+                ...player,
+                x: null,
+                y: null
+            }
+        ]);
+    };
+
+    const updatePlayerPosition = (playerId, x, y) => {
+
+        if (x === null || y === null) {
+            setLineup(current =>
+                current.filter(player => player.id !== playerId)
+            );
+
+            return;
+        }
+
+        setLineup(current =>
+            current.map(player =>
+                player.id === playerId
+                    ? { ...player, x, y }
+                    : player
+            )
+        );
+    };
+
+
+    const removePlayerFromLineup = (playerId) => {
+        setLineup(current =>
+            current.filter(player => player.id !== playerId)
+        );
+    };
+
+
+    const resetLineup = () => {
+        setLineup([]);
+    };
+
 
     return (
         <div className="app">
@@ -66,7 +125,9 @@ function App() {
 
                     <div className="team-control">
 
-                        <span>TEAM</span>
+                        <span>
+                            TEAM
+                        </span>
 
                         <select
                             value={team}
@@ -100,12 +161,19 @@ function App() {
 
                 <Squad
                     squad={squad}
-                    team={team}
+                    lineup={lineup}
+                    onAddPlayer={addPlayerToLineup}
+                    onRemovePlayer={removePlayerFromLineup}
                 />
+
 
                 <Pitch
                     formation={formation}
-                    team={team}
+                    lineup={lineup}
+                    squad={squad}
+                    onAddPlayer={addPlayerToLineup}
+                    onUpdatePlayerPosition={updatePlayerPosition}
+                    onReset={resetLineup}
                 />
 
             </main>
@@ -115,3 +183,4 @@ function App() {
 }
 
 export default App;
+

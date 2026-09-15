@@ -54,34 +54,82 @@ const formations = {
     ]
 };
 
-function Pitch({ formation }) {
+
+const canPlayPosition = (player, position) => {
+
+    if (player.position === position) {
+        return true;
+    }
+
+    const compatiblePositions = {
+
+        CF: ["ST"],
+
+        AM: ["CM", "AM"],
+
+        CM: ["CM", "AM", "DM"],
+
+        DM: ["DM", "CM"],
+
+        LW: ["LW", "LM"],
+
+        RW: ["RW", "RM"],
+
+        LM: ["LM", "LW"],
+
+        RM: ["RM", "RW"],
+
+        ST: ["ST", "CF"]
+    };
+
+    return compatiblePositions[player.position]?.includes(position);
+};
+
+
+function Pitch({ formation, lineup, onAddPlayer }) {
 
     const [players, setPlayers] = useState(
         formations[formation]
     );
 
-    /*
-     * Whenever the formation changes,
-     * load that formation's default positions.
-     */
+
     useEffect(() => {
         setPlayers(formations[formation]);
     }, [formation]);
 
-    /*
-     * Move a player when the user drags them.
-     */
+    const handleDragOver = (event) => {
+        event.preventDefault();
+    }
+
+    const handleDrop = (event) => {
+        event.preventDefault();
+
+        const playerId = Number(
+            event.dataTransfer.getData("playerId")
+        );
+
+    const player = lineup.find(
+        player => player.id === playerId
+        );
+
+    if (player) {
+        return;
+    }
+
+        onAddPlayer(playerId);
+    };
+
     const handleDrag = (event, index) => {
 
         const pitch = event.currentTarget.parentElement;
         const rect = pitch.getBoundingClientRect();
 
-        let x = ((event.clientX - rect.left) / rect.width) * 100;
-        let y = ((event.clientY - rect.top) / rect.height) * 100;
+        let x =
+            ((event.clientX - rect.left) / rect.width) * 100;
 
-        /*
-         * Keep players inside the pitch.
-         */
+        let y =
+            ((event.clientY - rect.top) / rect.height) * 100;
+
         x = Math.max(5, Math.min(95, x));
         y = Math.max(5, Math.min(95, y));
 
@@ -94,12 +142,32 @@ function Pitch({ formation }) {
         );
     };
 
+
     /*
-     * Reset the players to the default formation.
+     * Reset the formation positions.
      */
     const resetFormation = () => {
         setPlayers(formations[formation]);
     };
+
+
+    const assignedPlayers = [];
+    const usedPlayers = new Set();
+
+    players.forEach(slot => {
+
+        const matchingPlayer = lineup.find(player =>
+            !usedPlayers.has(player.id) &&
+            canPlayPosition(player, slot.position)
+        );
+
+        if (matchingPlayer) {
+            usedPlayers.add(matchingPlayer.id);
+        }
+
+        assignedPlayers.push(matchingPlayer || null);
+    });
+
 
     return (
         <section className="pitch-area">
@@ -114,7 +182,7 @@ function Pitch({ formation }) {
                 <div className="pitch-controls">
 
                     <span className="pitch-status">
-                        {players.length} / 11 PLAYERS
+                        {lineup.length} / 11 PLAYERS
                     </span>
 
                     <button
@@ -128,6 +196,7 @@ function Pitch({ formation }) {
 
             </div>
 
+
             <div className="pitch">
 
                 <div className="penalty-box top">
@@ -140,32 +209,59 @@ function Pitch({ formation }) {
                     <div className="goal"></div>
                 </div>
 
-                {players.map((player, index) => (
 
-                    <div
-                        key={index}
-                        className="pitch-player"
-                        draggable
-                        onDragEnd={(event) =>
-                            handleDrag(event, index)
-                        }
-                        style={{
-                            left: `${player.x}%`,
-                            top: `${player.y}%`
-                        }}
-                    >
+                {players.map((player, index) => {
 
-                        <div className="player-marker">
-                            {player.position}
+                    const selectedPlayer = assignedPlayers[index];
+
+                    return (
+                        <div
+                            key={index}
+                            className="pitch-player"
+                            draggable
+                            onDragEnd={(event) =>
+                                handleDrag(event, index)
+                            }
+                            style={{
+                                left: `${player.x}%`,
+                                top: `${player.y}%`
+                            }}
+                        >
+
+                            {selectedPlayer ? (
+
+                                <div className="pitch-player-card">
+
+                                    <div className="pitch-player-number">
+                                        {selectedPlayer.shirtNumber}
+                                    </div>
+
+                                    <div className="pitch-player-info">
+
+                                        <strong>
+                                            {selectedPlayer.name}
+                                        </strong>
+
+                                        <span>
+                                            {selectedPlayer.position}
+                                        </span>
+
+                                    </div>
+
+                                </div>
+
+                            ) : (
+
+                                <div className="empty-position">
+                                    {player.position}
+                                </div>
+
+                            )}
+
                         </div>
+                    );
 
-                        <span>
-                            {player.position}
-                        </span>
-
-                    </div>
-
-                ))}
+                })}
 
             </div>
 

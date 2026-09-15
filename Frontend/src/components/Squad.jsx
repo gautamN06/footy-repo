@@ -1,6 +1,8 @@
 import PlayerCard from "./PlayerCard";
 
-function Squad({ squad }) {
+function Squad({ squad, lineup, onAddPlayer, onRemovePlayer }) {
+
+    console.log("SQUAD FROM API:", squad)
 
     const goalkeepers = squad.filter(
         player => player.position === "GK"
@@ -18,62 +20,73 @@ function Squad({ squad }) {
         player => ["LW", "RW", "ST", "CF"].includes(player.position)
     );
 
+    const isSelected = (player) => {
+        return lineup.some(
+            selectedPlayer => selectedPlayer.id === player.id
+        );
+    };
+
+    const renderPlayer = (player) => (
+        <PlayerCard
+            key={player.id}
+            player={player}
+            onAdd={onAddPlayer}
+            onRemove={onRemovePlayer}
+            selected={isSelected(player)}
+        />
+    );
+
     return (
         <aside className="squad-panel">
 
             <div className="squad-heading">
+
                 <div>
-                    <p className="eyebrow">ARSENAL</p>
-                    <h2>Squad</h2>
+                    <p className="eyebrow">
+                        ARSENAL
+                    </p>
+
+                    <h2>
+                        Squad
+                    </h2>
                 </div>
 
                 <span className="player-count">
                     {squad.length}
                 </span>
+
             </div>
 
             <div className="squad-section">
+
                 <h3>GOALKEEPERS</h3>
 
-                {goalkeepers.map(player => (
-                    <PlayerCard
-                        key={player.id}
-                        player={player}
-                    />
-                ))}
+                {goalkeepers.map(renderPlayer)}
+
             </div>
 
             <div className="squad-section">
+
                 <h3>DEFENDERS</h3>
 
-                {defenders.map(player => (
-                    <PlayerCard
-                        key={player.id}
-                        player={player}
-                    />
-                ))}
+                {defenders.map(renderPlayer)}
+
             </div>
 
             <div className="squad-section">
+
                 <h3>MIDFIELDERS</h3>
 
-                {midfielders.map(player => (
-                    <PlayerCard
-                        key={player.id}
-                        player={player}
-                    />
-                ))}
+                {midfielders.map(renderPlayer)}
+
             </div>
 
             <div className="squad-section">
+
                 <h3>FORWARDS</h3>
 
-                {forwards.map(player => (
-                    <PlayerCard
-                        key={player.id}
-                        player={player}
-                    />
-                ))}
+                {forwards.map(renderPlayer)}
+
             </div>
 
         </aside>
@@ -81,3 +94,4 @@ function Squad({ squad }) {
 }
 
 export default Squad;
+
